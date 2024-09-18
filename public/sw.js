@@ -75,6 +75,80 @@ this.addEventListener("fetch", (event) => {
   }
 });
 
+// const checkYourConditionHere = () => {
+//   return false;
+// };
+
+// this.addEventListener("fetch", (event) => {
+//   if (event.request.url.includes(API_URL)) {
+//     // Conditional logic to determine whether to fetch from network
+//     const shouldFetchFromNetwork = checkYourConditionHere(); // Replace this with your actual condition
+
+//     if (shouldFetchFromNetwork) {
+//       // If the condition is true, fetch from the network
+//       event.respondWith(
+//         fetch(event.request)
+//           .then((networkResponse) => {
+//             return caches.open(CACHE_NAME).then((cache) => {
+//               cache.put(event.request, networkResponse.clone()); // Cache the network response
+//               return networkResponse; // Return the network response
+//             });
+//           })
+//           .catch((error) => {
+//             console.error("Network fetch failed:", error);
+//             // Fallback to cache if network fails
+//             return caches.match(event.request).then((cachedResponse) => {
+//               return (
+//                 cachedResponse ||
+//                 new Response("You are offline and the data is unavailable.")
+//               );
+//             });
+//           })
+//       );
+//     } else {
+//       // If the condition is false, serve from cache if available
+//       event.respondWith(
+//         caches.match(event.request).then((cachedResponse) => {
+//           if (cachedResponse) {
+//             console.log("Serving cached API data:", event.request.url);
+//             return cachedResponse;
+//           }
+
+//           // Fallback to network if cache is unavailable
+//           return fetch(event.request)
+//             .then((networkResponse) => {
+//               // Cache the new response
+//               return caches.open(CACHE_NAME).then((cache) => {
+//                 cache.put(event.request, networkResponse.clone());
+//                 return networkResponse;
+//               });
+//             })
+//             .catch((error) => {
+//               console.error("Network fetch failed:", error);
+//               return new Response(
+//                 "You are offline and the data is unavailable."
+//               );
+//             });
+//         })
+//       );
+//     }
+//   } else {
+//     // Handle non-API requests (app shell files)
+//     event.respondWith(
+//       caches.match(event.request).then((cachedResponse) => {
+//         if (cachedResponse) {
+//           return cachedResponse;
+//         }
+
+//         return fetch(event.request).catch(() => {
+//           // Serve offline page if network is unavailable
+//           return caches.match("offline.html");
+//         });
+//       })
+//     );
+//   }
+// });
+
 this.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then((keyList) => {

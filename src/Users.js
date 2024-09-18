@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "react-bootstrap";
-import { addData, db, getAllData } from "./db";
+import { addData, db } from "./db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 const Users = () => {
   const [data, setData] = useState([]);
 
-  const allUserDetails = useLiveQuery(() => db.userList.toArray(), []);
+  const allUserDetails = useLiveQuery(
+    () => db.userList.where("dataKey").equals("dataKey").toArray(),
+    []
+  );
 
   const fetchData = async () => {
     try {
@@ -16,24 +19,25 @@ const Users = () => {
       setData(resultData);
       await addData(resultData);
     } catch (error) {
-      // let collection = localStorage.getItem("users");
-      // setData(JSON.parse(collection));
-      setData(allUserDetails);
-    }
-  };
-
-  const loadData = async () => {
-    if (allUserDetails?.length) {
-      console.log("storedData", allUserDetails);
-      setData(allUserDetails);
-    } else {
-      fetchData();
+      if (allUserDetails?.length > 0) {
+        console.log("Using stored data from IndexedDB:", allUserDetails);
+        setData(allUserDetails[0]?.userDetails);
+      }
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (
+      allUserDetails &&
+      Array.isArray(allUserDetails) &&
+      allUserDetails.length > 0 &&
+      allUserDetails[0]?.userDetails?.length > 0
+    ) {
+      setData(allUserDetails[0].userDetails);
+    } else {
+      fetchData(); // Fetch new data if nothing is stored
+    }
+  }, [allUserDetails]);
 
   return (
     <>
