@@ -1,24 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "react-bootstrap";
+import { addData, db, getAllData } from "./db";
+import { useLiveQuery } from "dexie-react-hooks";
 
 const Users = () => {
   const [data, setData] = useState([]);
 
+  const allUserDetails = useLiveQuery(() => db.userList.toArray(), []);
+
+  const fetchData = async () => {
+    try {
+      let url = "https://jsonplaceholder.typicode.com/users";
+      const response = await fetch(url); // Replace with your actual API URL
+      const resultData = await response.json();
+      setData(resultData);
+      await addData(resultData);
+    } catch (error) {
+      // let collection = localStorage.getItem("users");
+      // setData(JSON.parse(collection));
+      setData(allUserDetails);
+    }
+  };
+
+  const loadData = async () => {
+    if (allUserDetails?.length) {
+      console.log("storedData", allUserDetails);
+      setData(allUserDetails);
+    } else {
+      fetchData();
+    }
+  };
+
   useEffect(() => {
-    let url = "https://jsonplaceholder.typicode.com/users";
-    fetch(url).then((response) => {
-      response
-        .json()
-        .then((result) => {
-          //   console.warn(result);
-          setData(result);
-          localStorage.setItem("users", JSON.stringify(result));
-        })
-        .catch((err) => {
-          let collection = localStorage.getItem("users");
-          setData(JSON.parse(collection));
-        });
-    });
+    loadData();
   }, []);
 
   return (

@@ -1,41 +1,4 @@
-// let cacheData = "appV1";
-// this.addEventListener("install", (event) => {
-//   event.waitUntil(
-//     caches.open(cacheData).then((cache) => {
-//       cache.addAll([
-//         "/static/js/bundle.js",
-//         "/manifest.json",
-//         "/index.html",
-//         "offline.html",
-//         "/logo192.png",
-//         "/favicon.ico",
-//         "/ws",
-//         "/",
-//         "/users",
-//       ]);
-//     })
-//   );
-// });
-
-// this.addEventListener("fetch", (event) => {
-//   if (!navigator.onLine) {
-//     event.respondWith(
-//       caches.match(event.request).then((resp) => {
-//         if (resp) {
-//           return resp || fetch(event.request);
-//         }
-//         let requestUrl = event.request.clone();
-//         // fetch(requestUrl);
-//         return fetch(requestUrl).catch(() => {
-//           // Optionally, return a fallback page if the network request fails
-//           return caches.match("/offline.html"); // Ensure you have an offline.html in cache
-//         });
-//       })
-//     );
-//   }
-// });
-
-let cacheData = "appV1";
+let CACHE_NAME = "app-v3";
 const API_URL = "https://jsonplaceholder.typicode.com/users"; // Replace with your API URL
 
 //incase of multiple API's ***************************************
@@ -48,7 +11,7 @@ const API_URL = "https://jsonplaceholder.typicode.com/users"; // Replace with yo
 // Install Event: Cache the app shell resources
 this.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(cacheData).then((cache) => {
+    caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
         "/static/js/bundle.js",
         "/manifest.json",
@@ -83,7 +46,7 @@ this.addEventListener("fetch", (event) => {
         // If no cache, fetch from the API and cache the response
         return fetch(event.request)
           .then((networkResponse) => {
-            return caches.open(cacheData).then((cache) => {
+            return caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, networkResponse.clone());
               console.log("Fetched and cached API data:", event.request.url);
               return networkResponse;
@@ -110,4 +73,18 @@ this.addEventListener("fetch", (event) => {
       })
     );
   }
+});
+
+this.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
 });
