@@ -1,25 +1,43 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "react-bootstrap";
+import { addData, db } from "./db";
+import { useLiveQuery } from "dexie-react-hooks";
 
 const Users = () => {
   const [data, setData] = useState([]);
 
+  const allUserDetails = useLiveQuery(
+    () => db.userList.where("dataKey").equals("dataKey").toArray(),
+    []
+  );
+
+  const fetchData = async () => {
+    try {
+      let url = "https://jsonplaceholder.typicode.com/users";
+      const response = await fetch(url); // Replace with your actual API URL
+      const resultData = await response.json();
+      setData(resultData);
+      await addData(resultData);
+    } catch (error) {
+      if (allUserDetails?.length > 0) {
+        console.log("Using stored data from IndexedDB:", allUserDetails);
+        setData(allUserDetails[0]?.userDetails);
+      }
+    }
+  };
+
   useEffect(() => {
-    let url = "https://jsonplaceholder.typicode.com/users";
-    fetch(url).then((response) => {
-      response
-        .json()
-        .then((result) => {
-          //   console.warn(result);
-          setData(result);
-          localStorage.setItem("users", JSON.stringify(result));
-        })
-        .catch((err) => {
-          let collection = localStorage.getItem("users");
-          setData(JSON.parse(collection));
-        });
-    });
-  }, []);
+    if (
+      allUserDetails &&
+      Array.isArray(allUserDetails) &&
+      allUserDetails.length > 0 &&
+      allUserDetails[0]?.userDetails?.length > 0
+    ) {
+      setData(allUserDetails[0].userDetails);
+    } else {
+      fetchData(); // Fetch new data if nothing is stored
+    }
+  }, [allUserDetails]);
 
   return (
     <>
